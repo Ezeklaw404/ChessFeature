@@ -1,10 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="MainWindow.xaml.cs">
-//     Copyright (c) Michael Szvetits. All rights reserved.
-// </copyright>
-// <author>Michael Szvetits</author>
-//-----------------------------------------------------------------------
-namespace Chess.View.Window
+﻿namespace Chess.View.Window
 {
     using Chess.Model.Game;
     using Chess.View.Selector;
@@ -16,9 +10,9 @@ namespace Chess.View.Window
     using System.Windows.Input;
 
     /// <summary>
-    /// Interaction logic for the <see cref="MainWindow"/> window.
+    /// Interaction logic for the <see cref="Chess960Window"/> window.
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class Chess960Window : Window
     {
         /// <summary>
         /// Represents the view model of the window.
@@ -31,12 +25,12 @@ namespace Chess.View.Window
         private readonly PromotionSelector promotionSelector;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MainWindow"/> class.
+        /// Initializes a new instance of the <see cref="Chess960Window"/> class.
         /// </summary>
-        public MainWindow()
+        public Chess960Window()
         {
             this.InitializeComponent();
-            this.game = new ChessGameVM(this.Choose, false);
+            this.game = new ChessGameVM(this.Choose, true);
             this.promotionSelector = new PromotionSelector();
             this.DataContext = this.game;
         }
@@ -104,7 +98,6 @@ namespace Chess.View.Window
                     ? promotions[selectedPiece]
                     : null;
         }
-
 
         private void MainMenuClick(object sender, RoutedEventArgs e)
         {

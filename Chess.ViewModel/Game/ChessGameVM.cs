@@ -54,10 +54,11 @@ namespace Chess.ViewModel.Game
         /// Initializes a new instance of the <see cref="ChessGameVM"/> class.
         /// </summary>
         /// <param name="updateSelector">The disambiguation mechanism if multiple updates are available for a target field.</param>
-        public ChessGameVM(Func<IList<Update>, Update> updateSelector)
+        public ChessGameVM(Func<IList<Update>, Update> updateSelector, bool chess960)
         {
             this.rulebook = new StandardRulebook();
-            this.Game = this.rulebook.CreateGame();
+            if (chess960) this.Game = this.rulebook.Create960Game();
+            else this.Game = this.rulebook.CreateGame();
             this.board = new BoardVM(this.Game.Board);
             this.updateSelector = updateSelector;
             this.negator = new CommandNegator();

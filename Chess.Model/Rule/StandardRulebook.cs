@@ -6,14 +6,15 @@
 //-----------------------------------------------------------------------
 namespace Chess.Model.Rule
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Linq;
     using Chess.Model.Command;
     using Chess.Model.Data;
     using Chess.Model.Game;
     using Chess.Model.Piece;
     using Chess.Model.Visitor;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.Linq;
 
     /// <summary>
     /// Represents the standard chess rulebook.
@@ -90,6 +91,100 @@ namespace Chess.Model.Rule
 
             return new ChessGame(board, whitePlayer, blackPlayer);
         }
+
+        public ChessGame Create960Game()
+        {
+            Random rnd = new Random();
+
+            IEnumerable<PlacedPiece> makePawns(int row, Color color) =>
+                Enumerable.Range(0, 8).Select(i => new PlacedPiece(new Position(row, i), new Pawn(color)));
+
+            // Generate white back rank
+            ChessPiece[] GenerateWhiteBackRank(Color color)
+            {
+                var positions = new ChessPiece[8];
+
+                // Place bishops on opposite colors
+                int darkBishop = 2 * rnd.Next(0, 4);       // dark squares: 0,2,4,6
+                int lightBishop = 2 * rnd.Next(0, 4) + 1;  // light squares: 1,3,5,7
+                positions[darkBishop] = new Bishop(color);
+                positions[lightBishop] = new Bishop(color);
+
+                // Remaining positions
+                var remaining = Enumerable.Range(0, 8).Where(i => positions[i] == null).ToList();
+
+                // Place queen randomly
+                int queenIndex = remaining[rnd.Next(remaining.Count)];
+                positions[queenIndex] = new Queen(color);
+                remaining.Remove(queenIndex);
+
+                // Place knights randomly
+                int knight1Index = remaining[rnd.Next(remaining.Count)];
+                positions[knight1Index] = new Knight(color);
+                remaining.Remove(knight1Index);
+
+                int knight2Index = remaining[rnd.Next(remaining.Count)];
+                positions[knight2Index] = new Knight(color);
+                remaining.Remove(knight2Index);
+
+                // Two remaining spots: king between rooks
+                remaining.Sort();
+                positions[remaining[0]] = new Rook(color);
+                positions[remaining[1]] = new King(color);
+                positions[remaining[2]] = new Rook(color);
+
+                return positions;
+            }
+
+            IEnumerable<PlacedPiece> makeBackRank(int row, ChessPiece[] backRank, Color color)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    // Use the type of piece from backRank[i] but change color
+                    var piece = ClonePieceForColor(backRank[i], color);
+                    yield return new PlacedPiece(new Position(row, i), piece);
+                }
+            }
+
+            // Helper to clone piece with a new color
+            ChessPiece ClonePieceForColor(ChessPiece piece, Color color)
+            {
+                return piece switch
+                {
+                    King => new King(color),
+                    Queen => new Queen(color),
+                    Rook => new Rook(color),
+                    Bishop => new Bishop(color),
+                    Knight => new Knight(color),
+                    Pawn => new Pawn(color),
+                    _ => throw new InvalidOperationException("Unknown piece type")
+                };
+            }
+
+            IImmutableDictionary<Position, ChessPiece> makePieces(int pawnRow, int baseRow, ChessPiece[] backRank, Color color)
+            {
+                var pawns = makePawns(pawnRow, color);
+                var backPieces = makeBackRank(baseRow, backRank, color);
+                var pieces = backPieces.Union(pawns);
+                var empty = ImmutableSortedDictionary.Create<Position, ChessPiece>(PositionComparer.DefaultComparer);
+                return pieces.Aggregate(empty, (s, p) => s.Add(p.Position, p.Piece));
+            }
+
+            // Generate white back rank
+            var whiteBackRank = GenerateWhiteBackRank(Color.White);
+
+            var whitePlayer = new Player(Color.White);
+            var whitePieces = makePieces(1, 0, whiteBackRank, Color.White);
+
+            var blackPlayer = new Player(Color.Black);
+            // Mirror the white back rank for black
+            var blackPieces = makePieces(6, 7, whiteBackRank, Color.Black);
+
+            var board = new Board(whitePieces.AddRange(blackPieces));
+
+            return new ChessGame(board, whitePlayer, blackPlayer);
+        }
+
 
         /// <summary>
         /// Gets the status of a chess game, according to the standard rulebook.

@@ -1,0 +1,17 @@
+﻿<w:Window x:Class="Chess.View.Window.MainMenu"
+          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+          xmlns:w="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          mc:Ignorable="d"
+          Title="Select Game Mode"
+          WindowStartupLocation="CenterScreen"
+          SizeToContent="WidthAndHeight"
+          ResizeMode="NoResize"
+          Icon="/Icon/appIcon.png">
+    <WrapPanel Orientation="Horizontal" Margin="10 20">
+        <Button Content="Chess"     Click="ChooseClick" Tag="chess"    Width="120" Height="48" Margin="10,0"/>
+        <Button Content="Chess960"  Click="ChooseClick" Tag="chess960" Width="120" Height="48" Margin="10,0"/>
+    </WrapPanel>
+</w:Window>
